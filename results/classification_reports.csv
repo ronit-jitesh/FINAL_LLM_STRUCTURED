@@ -1,0 +1,49 @@
+model,class,precision,recall,f1,support
+BERT-base,entailment,0.8962,0.8204,0.8566,284
+BERT-base,neutral,0.7824,0.8071,0.7946,254
+BERT-base,contradiction,0.8309,0.8817,0.8556,262
+DeBERTa-v3-small,entailment,0.9194,0.8838,0.9013,284
+DeBERTa-v3-small,neutral,0.8061,0.8346,0.8201,254
+DeBERTa-v3-small,contradiction,0.8939,0.9008,0.8973,262
+RoBERTa-base,entailment,0.9158,0.8803,0.8977,284
+RoBERTa-base,neutral,0.8429,0.8661,0.8544,254
+RoBERTa-base,contradiction,0.8985,0.9122,0.9053,262
+DeBERTa-v3-base,entailment,0.9442,0.8944,0.9186,284
+DeBERTa-v3-base,neutral,0.8303,0.8858,0.8571,254
+DeBERTa-v3-base,contradiction,0.9308,0.9237,0.9272,262
+DeBERTa-v3-large,entailment,0.9549,0.8944,0.9236,284
+DeBERTa-v3-large,neutral,0.834,0.8701,0.8516,254
+DeBERTa-v3-large,contradiction,0.9145,0.9389,0.9266,262
+GPT-4o P1,entailment,0.9121,0.7676,0.8337,284
+GPT-4o P1,neutral,0.7252,0.8622,0.7878,254
+GPT-4o P1,contradiction,0.9073,0.8969,0.9021,262
+GPT-4o P2,entailment,0.917,0.7394,0.8187,284
+GPT-4o P2,neutral,0.7138,0.8543,0.7778,254
+GPT-4o P2,contradiction,0.8839,0.9008,0.8922,262
+GPT-4o P3,entailment,0.9174,0.7817,0.8441,284
+GPT-4o P3,neutral,0.7491,0.8346,0.7896,254
+GPT-4o P3,contradiction,0.8873,0.9313,0.9088,262
+GPT-4o P4,entailment,0.9153,0.7993,0.8534,284
+GPT-4o P4,neutral,0.7353,0.8858,0.8036,254
+GPT-4o P4,contradiction,0.9431,0.8855,0.9134,262
+GPT-4o P5,entailment,0.9567,0.7782,0.8583,284
+GPT-4o P5,neutral,0.7677,0.7677,0.7677,254
+GPT-4o P5,contradiction,0.8127,0.9771,0.8873,262
+Claude P1,entailment,0.9029,0.8838,0.8932,284
+Claude P1,neutral,0.8259,0.8031,0.8144,254
+Claude P1,contradiction,0.8873,0.9313,0.9088,262
+Claude P2,entailment,0.9219,0.8732,0.8969,284
+Claude P2,neutral,0.8165,0.8583,0.8369,254
+Claude P2,contradiction,0.9129,0.9198,0.9163,262
+Claude P3,entailment,0.9051,0.8732,0.8889,284
+Claude P3,neutral,0.8548,0.811,0.8323,254
+Claude P3,contradiction,0.8912,0.9695,0.9287,262
+Claude P4,entailment,0.8682,0.7887,0.8266,284
+Claude P4,neutral,0.7944,0.6693,0.7265,254
+Claude P4,contradiction,0.7622,0.9542,0.8475,262
+Hybrid v4 θ=0.90,entailment,0.966,0.9014,0.9326,284
+Hybrid v4 θ=0.90,neutral,0.8441,0.874,0.8588,254
+Hybrid v4 θ=0.90,contradiction,0.9114,0.9427,0.9268,262
+Hybrid v1 θ=0.90,entailment,0.9373,0.8944,0.9153,284
+Hybrid v1 θ=0.90,neutral,0.8403,0.8701,0.8549,254
+Hybrid v1 θ=0.90,contradiction,0.9248,0.9389,0.9318,262

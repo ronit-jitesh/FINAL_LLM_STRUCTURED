@@ -1,0 +1,76 @@
+genre,model,class,accuracy,n,overall_genre_acc
+fiction,DeBERTa-v3-base,entailment,0.8261,46,0.8784
+fiction,DeBERTa-v3-base,neutral,0.9091,55,0.8784
+fiction,DeBERTa-v3-base,contradiction,0.8936,47,0.8784
+fiction,DeBERTa-v3-large,entailment,0.8478,46,0.8986
+fiction,DeBERTa-v3-large,neutral,0.8909,55,0.8986
+fiction,DeBERTa-v3-large,contradiction,0.9574,47,0.8986
+fiction,RoBERTa-base,entailment,0.8913,46,0.8919
+fiction,RoBERTa-base,neutral,0.8545,55,0.8919
+fiction,RoBERTa-base,contradiction,0.9362,47,0.8919
+fiction,BERT-base,entailment,0.8478,46,0.8716
+fiction,BERT-base,neutral,0.8182,55,0.8716
+fiction,BERT-base,contradiction,0.9574,47,0.8716
+government,DeBERTa-v3-base,entailment,0.9333,60,0.9136
+government,DeBERTa-v3-base,neutral,0.8929,56,0.9136
+government,DeBERTa-v3-base,contradiction,0.913,46,0.9136
+government,DeBERTa-v3-large,entailment,0.9,60,0.9074
+government,DeBERTa-v3-large,neutral,0.875,56,0.9074
+government,DeBERTa-v3-large,contradiction,0.9565,46,0.9074
+government,RoBERTa-base,entailment,0.8667,60,0.8951
+government,RoBERTa-base,neutral,0.8929,56,0.8951
+government,RoBERTa-base,contradiction,0.9348,46,0.8951
+government,BERT-base,entailment,0.8,60,0.8642
+government,BERT-base,neutral,0.8929,56,0.8642
+government,BERT-base,contradiction,0.913,46,0.8642
+slate,DeBERTa-v3-base,entailment,0.8814,59,0.8968
+slate,DeBERTa-v3-base,neutral,0.9,40,0.8968
+slate,DeBERTa-v3-base,contradiction,0.9107,56,0.8968
+slate,DeBERTa-v3-large,entailment,0.8983,59,0.8968
+slate,DeBERTa-v3-large,neutral,0.85,40,0.8968
+slate,DeBERTa-v3-large,contradiction,0.9286,56,0.8968
+slate,RoBERTa-base,entailment,0.8475,59,0.8581
+slate,RoBERTa-base,neutral,0.85,40,0.8581
+slate,RoBERTa-base,contradiction,0.875,56,0.8581
+slate,BERT-base,entailment,0.8136,59,0.8065
+slate,BERT-base,neutral,0.8,40,0.8065
+slate,BERT-base,contradiction,0.8036,56,0.8065
+telephone,DeBERTa-v3-base,entailment,0.9032,62,0.9018
+telephone,DeBERTa-v3-base,neutral,0.8269,52,0.9018
+telephone,DeBERTa-v3-base,contradiction,0.9796,49,0.9018
+telephone,DeBERTa-v3-large,entailment,0.8871,62,0.8957
+telephone,DeBERTa-v3-large,neutral,0.8462,52,0.8957
+telephone,DeBERTa-v3-large,contradiction,0.9592,49,0.8957
+telephone,RoBERTa-base,entailment,0.871,62,0.8773
+telephone,RoBERTa-base,neutral,0.8077,52,0.8773
+telephone,RoBERTa-base,contradiction,0.9592,49,0.8773
+telephone,BERT-base,entailment,0.8226,62,0.8098
+telephone,BERT-base,neutral,0.7115,52,0.8098
+telephone,BERT-base,contradiction,0.898,49,0.8098
+travel,DeBERTa-v3-base,entailment,0.9123,57,0.9128
+travel,DeBERTa-v3-base,neutral,0.902,51,0.9128
+travel,DeBERTa-v3-base,contradiction,0.9219,64,0.9128
+travel,DeBERTa-v3-large,entailment,0.9298,57,0.907
+travel,DeBERTa-v3-large,neutral,0.8824,51,0.907
+travel,DeBERTa-v3-large,contradiction,0.9062,64,0.907
+travel,RoBERTa-base,entailment,0.9298,57,0.907
+travel,RoBERTa-base,neutral,0.9216,51,0.907
+travel,RoBERTa-base,contradiction,0.875,64,0.907
+travel,BERT-base,entailment,0.8246,57,0.8314
+travel,BERT-base,neutral,0.8039,51,0.8314
+travel,BERT-base,contradiction,0.8594,64,0.8314
+fiction,Hybrid v4,entailment,0.8478,46,0.9054
+fiction,Hybrid v4,neutral,0.9091,55,0.9054
+fiction,Hybrid v4,contradiction,0.9574,47,0.9054
+government,Hybrid v4,entailment,0.9,60,0.9136
+government,Hybrid v4,neutral,0.8929,56,0.9136
+government,Hybrid v4,contradiction,0.9565,46,0.9136
+slate,Hybrid v4,entailment,0.8983,59,0.8968
+slate,Hybrid v4,neutral,0.85,40,0.8968
+slate,Hybrid v4,contradiction,0.9286,56,0.8968
+telephone,Hybrid v4,entailment,0.9032,62,0.9018
+telephone,Hybrid v4,neutral,0.8462,52,0.9018
+telephone,Hybrid v4,contradiction,0.9592,49,0.9018
+travel,Hybrid v4,entailment,0.9474,57,0.9128
+travel,Hybrid v4,neutral,0.8627,51,0.9128
+travel,Hybrid v4,contradiction,0.9219,64,0.9128
