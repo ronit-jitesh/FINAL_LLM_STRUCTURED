@@ -373,10 +373,10 @@ def plot_matched_vs_mismatched():
         # P4 (CoT)
         m_p4  = df_gpt4o[df_gpt4o["prompt"] == "P4_few_shot_cot"]
         mm = df_gpt4o_mm[df_gpt4o_mm["prompt"] == "P4_few_shot_cot"]
-        if len(m) > 0 and len(mm) > 0:
+        if len(m_p4) > 0 and len(mm) > 0:
             data += [
                 {"System": "GPT-4o P4 (CoT)", "Set": "Matched",
-                 "Accuracy": accuracy_score(m["label_true"],  m["predicted_label"])},
+                 "Accuracy": accuracy_score(m_p4["label_true"],  m_p4["predicted_label"])},
                 {"System": "GPT-4o P4 (CoT)", "Set": "Mismatched",
                  "Accuracy": accuracy_score(mm["label_true"], mm["predicted_label"])},
             ]
