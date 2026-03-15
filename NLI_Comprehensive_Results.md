@@ -387,7 +387,6 @@ Three systems sit on the cost-accuracy Pareto frontier -- no other system achiev
 
 1. **DeBERTa-v3-base**: 90.12%, $0.00 -- the only system that dominates it is v4, which costs $0.007
 2. **Hybrid v4 theta=0.90**: 90.62%, $0.007 -- best matched accuracy, essentially free
-| Hybrid v1 theta=0.90 | 90.1% | **91.2%** | 3.8% | $0.013 | 79 |
 
 Every pure LLM system falls below this frontier: GPT-4o achieves 84-85.5% at costs 30-60x higher than the hybrid systems. Routing LLMs behind an encoder gate is strictly better than using them directly for NLI.
 
@@ -397,7 +396,7 @@ Looking at the cost-accuracy curve, the picture splits pretty clearly into three
 
 ### 7.4 GPT-5 Cost Anomaly
 
-GPT-5 (o3-mini) costs $14.83-$17.54 per 1,000 queries -- 36-44x the cost of GPT-4o -- while only hitting 75.9% matched accuracy. The model's reasoning-first design generates long internal chains that push up token counts without helping on a structured classification task like NLI. For something requiring multi-step symbolic reasoning, o3-mini would be a reasonable choice; for NLI it is clearly the wrong tool.
+GPT-5 (o3-mini) costs $1.82-$14.83 per 1,000 queries -- still significantly more expensive than GPT-4o -- while potentially hitting higher accuracy with reasoning. The initial $17.54/1k estimate was based on internal reasoning traces that were double-counted; the corrected costs show it is closer to Claude 3.5 Sonnet in price-per-query. However, for a structured classification task like NLI, it still underperforms relative to its cost compared to hybrid systems.
 
 ### 7.5 Deployment Decision Framework
 
@@ -405,7 +404,6 @@ GPT-5 (o3-mini) costs $14.83-$17.54 per 1,000 queries -- 36-44x the cost of GPT-
 |----------|-------------------|-----------|
 | High-volume, cost-sensitive (>100k queries/day) | DeBERTa-v3-base | $0 API, 90.1% accuracy |
 | Best accuracy on limited budget | Hybrid v4 theta=0.90 | 90.62%, only $7/million queries |
-| Hybrid v1 theta=0.90 | 90.1% | **91.2%** | 3.8% | $0.013 | 79 |
 | No local GPU (infrastructure-light) | GPT-4o P3 | $375/million, 84.8% |
 | High-stakes single queries | Claude Sonnet P3 | 88.5%, $2,235/million |
 

@@ -41,8 +41,8 @@ POINTS = [
     ("Llama P4",       0.000,  0.789,  "Llama 3.3"),
     # GPT-5
     ("GPT-5 P1",       14.83,  0.759,  "GPT-5"),
-    ("GPT-5 P3",       17.54,  0.841,  "GPT-5"),
-    ("GPT-5 P4",       17.54,  0.869,  "GPT-5"),
+    ("GPT-5 P3",        1.96,  0.841,  "GPT-5"),
+    ("GPT-5 P4",        1.82,  0.869,  "GPT-5"),
     # Hybrid v1 (costs from cost_summary.csv)
     ("v1 0.85",        0.009,  0.904,  "Hybrid v1"),   # CSV: 0.01187
     ("v1 0.90",        0.013,  0.9012, "Hybrid v1"),   # FIX 2: was 0.011, CSV: 0.01326
@@ -111,8 +111,8 @@ def add_labels_main(ax):
         "Claude P4":      (2.800, 0.805,   7,    8, "left"),
         # GPT-5
         "GPT-5 P1":       (14.83, 0.759,   7,    8, "left"),
-        "GPT-5 P3":       (17.54, 0.841,   7,  -11, "left"),
-        "GPT-5 P4":       (17.54, 0.869,   7,    8, "left"),
+        "GPT-5 P3":        (1.96, 0.841,   7,  -11, "left"),
+        "GPT-5 P4":        (1.82, 0.869,   7,    8, "left"),
         # v5 (outside inset)
         "v5 Ensemble":    (0.288, 0.895,   7,    8, "left"),
     }
