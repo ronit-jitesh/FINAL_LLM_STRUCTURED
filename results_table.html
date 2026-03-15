@@ -362,8 +362,8 @@
 <div class="summary-strip">
   <div class="summary-card">
     <div class="label">Best Accuracy</div>
-    <div class="value">90.62%</div>
-    <div class="sub">Hybrid v4 θ=0.90</div>
+    <div class="value">91.0%</div>
+    <div class="sub">Hybrid v5 (Ensemble Gate)</div>
   </div>
   <div class="summary-card">
     <div class="label">Best Pure API</div>
@@ -371,13 +371,13 @@
     <div class="sub">Claude Sonnet P3</div>
   </div>
   <div class="summary-card">
-    <div class="label">Lowest Cost (API)</div>
+    <div class="label">Best Cost-Efficiency</div>
     <div class="value">$0.007</div>
     <div class="sub">Hybrid v4 θ=0.90 / 1k queries</div>
   </div>
   <div class="summary-card">
     <div class="label">Total Systems Evaluated</div>
-    <div class="value">22</div>
+    <div class="value">27</div>
     <div class="sub">5 encoders · 4 LLM families · 5 hybrid configs</div>
   </div>
 </div>
@@ -393,7 +393,7 @@ const rows = [
   ["Hybrid v4",        "θ=0.90",          "Hybrid",         800, 0.9062, 0.9061, 0.007,   "Hybrid"],
   ["Hybrid v1",        "θ=0.90",          "Hybrid",         800, 0.9012, 0.9007, 0.013,   "Hybrid"],
   ["Hybrid v2",        "θ=0.90",          "Hybrid",         800, 0.9012, 0.9007, 0.074,   "Hybrid"],
-  ["Hybrid v5",        "Ensemble Gate",   "Hybrid",         800, 0.8950, 0.8949, 0.288,   "Hybrid"],
+  ["Hybrid v5",        "Ensemble Gate",   "Hybrid",         800, 0.9100, 0.9101, 0.258,   "Hybrid"],
   ["Hybrid v3",        "θ=0.90",          "Hybrid",         800, 0.8988, 0.8986, 0.152,   "Hybrid"],
   ["Claude Sonnet",    "P3_few_shot",     "Claude",         800, 0.8850, 0.8833, 2.235,   "Claude"],
   ["Claude Sonnet",    "P2_zero_shot_def","Claude",         800, 0.8840, 0.8834, 0.399,   "Claude"],
@@ -459,7 +459,7 @@ function renderTable(data) {
     const ac = accColor(acc);
     const fc = accColor(f1);
     const rankNum = i + 1;
-    const isBestOverall = (model === "Hybrid v4" && prompt === "θ=0.90");
+    const isBestOverall = (model === "Hybrid v5" && prompt === "Ensemble Gate");
     const hidden = (currentFilter !== 'all' && typeKey !== currentFilter) ? 'hidden' : '';
 
     const tr = document.createElement('tr');

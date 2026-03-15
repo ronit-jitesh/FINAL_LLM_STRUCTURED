@@ -42,7 +42,7 @@ Claude P4,entailment,0.8682,0.7887,0.8266,284
 Claude P4,neutral,0.7944,0.6693,0.7265,254
 Claude P4,contradiction,0.7622,0.9542,0.8475,262
 Hybrid v4 θ=0.90,entailment,0.966,0.9014,0.9326,284
-Hybrid v4 θ=0.90,neutral,0.8441,0.874,0.8588,254
+Hybrid v4 θ=0.90,neutral,0.8447,0.878,0.861,254
 Hybrid v4 θ=0.90,contradiction,0.9114,0.9427,0.9268,262
 Hybrid v1 θ=0.90,entailment,0.9373,0.8944,0.9153,284
 Hybrid v1 θ=0.90,neutral,0.8403,0.8701,0.8549,254

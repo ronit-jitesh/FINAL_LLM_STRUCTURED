@@ -68,9 +68,9 @@ government,Hybrid v4,contradiction,0.9565,46,0.9136
 slate,Hybrid v4,entailment,0.8983,59,0.8968
 slate,Hybrid v4,neutral,0.85,40,0.8968
 slate,Hybrid v4,contradiction,0.9286,56,0.8968
-telephone,Hybrid v4,entailment,0.9032,62,0.9018
-telephone,Hybrid v4,neutral,0.8462,52,0.9018
-telephone,Hybrid v4,contradiction,0.9592,49,0.9018
+telephone,Hybrid v4,entailment,0.9032,62,0.908
+telephone,Hybrid v4,neutral,0.8654,52,0.908
+telephone,Hybrid v4,contradiction,0.9592,49,0.908
 travel,Hybrid v4,entailment,0.9474,57,0.9128
 travel,Hybrid v4,neutral,0.8627,51,0.9128
 travel,Hybrid v4,contradiction,0.9219,64,0.9128

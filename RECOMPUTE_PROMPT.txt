@@ -1,0 +1,38 @@
+# RECOMPUTE CHECKLIST & PROMPT
+
+If you update any CSV in `results/`, paste this into a new session to ensure the report stays in sync.
+
+---
+
+## 🤖 AI PROMPT
+"I have updated one or more results CSV files in the `results/` folder. Please run the master recompute script to update all project metrics, tables, and figures.
+
+Command: `python3 src/recompute_all.py`
+
+After it runs, please:
+1. Verify that `NLI_Comprehensive_Results.md` and `README.md` reflect the new numbers.
+2. Check the `figures/` folder to ensure all 15+ PNGs were regenerated.
+3. Commit and push all changes for me."
+
+---
+
+## 🔍 Hard-coded Locations for Manual Check
+If the recompute script fails to find a string (it uses regex), check these locations:
+
+### 1. NLI_Comprehensive_Results.md
+- **Executive Summary**: v5 accuracy (91.0/92.5) and 63% finding.
+- **Section 5.2 (v1 Table)**: Match/MM accuracy and cost.
+- **Section 5.5 (v4 Table)**: Best cost metrics.
+- **Section 5.6 (v5 Results)**: The 87.5% split and 63% escalated accuracy.
+- **Section 5.7 (Full Comparison)**: The master table.
+- **Section 5.9 (P/R/F1 Table)**: Detailed class metrics.
+- **Section 7.1 (Cost Table)**: Ranked rank and costs.
+
+### 2. README.md
+- **Header summary**: Best system summary.
+- **Key Results table**: Bottom row.
+
+### 3. Derived Files
+- `results/cost_summary.csv`
+- `results/classification_reports.csv`
+- `figures/fig1` through `fig15`.

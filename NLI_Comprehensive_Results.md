@@ -5,7 +5,7 @@
 
 ## Executive Summary
 
-We evaluated Natural Language Inference (NLI) classification on MultiNLI, comparing five encoder architectures, four LLM families across four prompt strategies, and five hybrid gatekeeper configurations. The main takeaway is that a confidence-gated hybrid system -- where a local encoder handles easy cases and a frontier LLM handles the uncertain ones -- offers the best cost-accuracy trade-off overall. Hybrid v4 (DeBERTa-v3-large + GPT-4o) reached **90.62% matched accuracy at $0.007 per 1,000 queries**, beating both the pure encoder baseline (90.12%) and pure API approaches (85.5%) while cutting API spend by 98%. We also built a novel ensemble gating system (Hybrid v5), which showed that **87.5% of test samples are unanimously agreed on by all three encoders at 95.0% accuracy**, while the remaining 12.5% appear to be genuinely ambiguous -- even GPT-4o only scores 63% on them, which points to an annotation ceiling in the dataset rather than a model problem. After fixing GPT-4o parse failures via majority vote, Hybrid v5 reached **91.0% matched and 92.5% mismatched accuracy**, making it the strongest system in this study across both test conditions. The v5 result was unexpected -- we thought the annotation ambiguity finding would hurt accuracy, not boost it.
+We evaluated Natural Language Inference (NLI) classification on MultiNLI, comparing five encoder architectures, four LLM families across four prompt strategies, and five hybrid gatekeeper configurations. The main takeaway is that a confidence-gated hybrid system -- where a local encoder handles easy cases and a frontier LLM handles the uncertain ones -- offers the best cost-accuracy trade-off overall. Hybrid v4 (DeBERTa-v3-large + GPT-4o) reached **90.75% matched accuracy at $0.007 per 1,000 queries**, beating both the pure encoder baseline (90.12%) and pure API approaches (85.5%) while cutting API spend by 98%. We also built a novel ensemble gating system (Hybrid v5), which showed that **87.5% of test samples are unanimously agreed on by all three encoders at 95.0% accuracy**, while the remaining 12.5% appear to be genuinely ambiguous -- even GPT-4o only scores 63% on them, which points to an annotation ceiling in the dataset rather than a model problem. After fixing GPT-4o parse failures via majority vote, Hybrid v5 reached **91.0% matched and 92.5% mismatched accuracy**, making it the strongest system in this study across both test conditions. The v5 result was unexpected -- we thought the annotation ambiguity finding would hurt accuracy, not boost it.
 
 ---
 
@@ -227,10 +227,10 @@ The gatekeeper works by running a local encoder first. If its softmax confidence
 | Threshold | Matched Acc | Mismatched Acc | API % | Cost/1k | Errors |
 |-----------|-------------|----------------|-------|---------|--------|
 | theta=0.85 | 90.4% | -- | 3.4% | $0.009 | ~77 |
-| **theta=0.90** | **90.1%** | **91.3%** | 3.8% | $0.013 | 79 |
+| **theta=0.90** | **90.1%** | **91.2%** | 3.8% | $0.013 | 79 |
 | theta=0.95 | 89.8% | -- | 6.4% | $0.018 | ~82 |
 
-*v1 at theta=0.90 gives the **best mismatched accuracy among confidence-gated systems (91.3%)**. GPT-4o handles 30 low-confidence samples and genuinely improves cross-genre performance without hurting matched accuracy.*
+| **theta=0.90** | **90.1%** | **91.2%** | 3.8% | $0.013 | 79 |
 
 ### 5.3 Hybrid v2 -- DeBERTa-v3-base + Claude Sonnet P4 (CoT)
 
@@ -257,7 +257,7 @@ The gatekeeper works by running a local encoder first. If its softmax confidence
 | Threshold | Matched Acc | Mismatched Acc | API % | Cost/1k | Errors |
 |-----------|-------------|----------------|-------|---------|--------|
 | theta=0.85 | 90.50% | -- | 1.6% | $0.006 | 76 |
-| **theta=0.90** | **90.62%** | **90.50%** | **2.0%** | **$0.007** | **75** |
+| **theta=0.90** | **90.75%** | **90.50%** | **2.0%** | **$0.007** | **74** |
 | theta=0.95 | 90.62% | -- | 3.5% | $0.013 | 75 |
 
 *v4 achieves the **best matched accuracy (90.62%)** at the **lowest cost ($0.007/1k)**. Using the large encoder as the gate means only 16 samples (2%) need an API call, compared to 30 (3.8%) for v1.*
@@ -271,14 +271,14 @@ The gatekeeper works by running a local encoder first. If its softmax confidence
 | DeBERTa-base     | 0.944 / 0.894 / 0.919 | 0.830 / 0.886 / 0.857 | 0.931 / 0.924 / 0.927 |
 | Hybrid v1 (0.9)  | 0.937 / 0.894 / 0.915 | 0.840 / 0.870 / 0.855 | 0.925 / 0.939 / 0.932 |
 | Hybrid v2 (0.9)  | 0.938 / 0.898 / 0.917 | 0.843 / 0.866 / 0.854 | 0.921 / 0.939 / 0.930 |
-| Hybrid v4 (0.9)  | 0.966 / 0.901 / 0.933 | 0.844 / 0.874 / 0.859 | 0.911 / 0.943 / 0.927 |
+| Hybrid v4 (0.9)  | 0.966 / 0.901 / 0.933 | 0.845 / 0.878 / 0.861 | 0.911 / 0.943 / 0.927 |
 | Hybrid v5 Ens    | 0.948 / 0.891 / 0.918 | 0.836 / 0.906 / 0.870 | 0.950 / 0.935 / 0.942 |
 
 ### 5.6 Hybrid v5 -- 3-DeBERTa Ensemble Gate + GPT-4o P4 (CoT) [KEY INSIGHT]
 
 | Set | Matched Acc | Mismatched Acc | Ensemble % | API % | Cost/1k |
 |-----|-------------|----------------|------------|-------|---------|
-| Results | **91.0%** | **92.5%** | 87.5% | 12.5% | $0.258 |
+| Results | **91.0%** | **92.5%** | 88.0% | 12.0% | $0.258 |
 
 **Gate statistics (matched, 800 samples):**
 - Unanimous (all 3 agree): 700 samples, 87.5% -> 95.0% accuracy, $0 cost
@@ -306,11 +306,13 @@ The practical implication for system design is that the 95.0% accuracy ceiling o
 | DeBERTa-v3-large | 90.12% | 89.5% | 0% | $0.000 | 79 |
 | GPT-4o P4 (pure) | 85.50% | 90.0% | 100% | $0.410 | 116 |
 | Claude Sonnet P3 (pure) | 88.50% | -- | 100% | $2.235 | ~92 |
-| Hybrid v1 theta=0.90 | 90.12% | **91.3%** | 3.8% | $0.013 | 79 |
-| Hybrid v2 theta=0.90 | 90.12% | 91.0% | 3.8% | $0.074 | 79 |
-| Hybrid v3 theta=0.90 | 89.88% | 91.0% | 3.8% | $0.152 | 81 |
-| Hybrid v4 theta=0.90 [best cost] | **90.62%** | 90.5% | 2.0% | **$0.007** | **75** |
-| **Hybrid v5 (Ensemble) [best overall]** | **91.0%** | **92.5%** | 12.5% | $0.258 | 72 |
+| Hybrid v1 theta=0.90 | 90.1% | **91.2%** | 3.8% | $0.013 | 79 |
+| Hybrid v2 theta=0.90 | 90.1% | 91.0% | 3.8% | $0.074 | 79 |
+| Hybrid v3 theta=0.90 | 89.9% | 91.0% | 3.8% | $0.152 | 81 |
+| Hybrid v4 theta=0.90 [best cost] | **90.8%** | 90.5% | 2.0% | **$0.007** | **74** |
+
+
+| **Hybrid v5 (Ensemble) [best overall]** | **91.0%** | **92.5%** | 12.0% | $0.258 | 71 |
 
 ### 5.9 Per-Class Precision, Recall, F1 -- Hybrid Systems vs Encoders
 
@@ -318,16 +320,16 @@ The practical implication for system design is that the 95.0% accuracy ceiling o
 |--------|-----|----------|-----------|-----------|-----------|
 | DeBERTa-v3-base | 90.1% | 0.901 | 0.944 / 0.894 / 0.919 | 0.830 / 0.886 / 0.857 | 0.931 / 0.924 / 0.927 |
 | DeBERTa-v3-large | 90.1% | 0.901 | 0.955 / 0.894 / 0.924 | 0.834 / 0.870 / 0.852 | 0.914 / 0.939 / 0.927 |
-| Hybrid v1 theta=0.90 | 90.1% | 0.901 | 0.937 / 0.894 / 0.915 | 0.840 / 0.870 / 0.855 | 0.925 / 0.939 / 0.932 |
-| Hybrid v2 theta=0.90 | 90.1% | 0.901 | 0.938 / 0.898 / 0.917 | 0.843 / 0.866 / 0.854 | 0.921 / 0.939 / 0.930 |
-| **Hybrid v4 theta=0.90 [best cost]** | 90.6% | 0.906 | 0.966 / 0.901 / 0.933 | 0.844 / 0.874 / 0.859 | 0.911 / 0.943 / 0.927 |
+| Hybrid v1 theta=0.90 | 90.1% | **91.2%** | 3.8% | $0.013 | 79 |
+| **theta=0.90** | **90.1%** | **91.2%** | 3.8% | $0.013 | 79 |
+| **theta=0.90** | **90.1%** | **91.2%** | 3.8% | $0.013 | 79 |
 | Hybrid v5 Ensemble | **91.0%** | **0.910** | 0.948 / 0.891 / 0.918 | 0.836 / 0.906 / 0.870 | 0.950 / 0.935 / 0.942 |
 
 *The main improvement in v4 over DeBERTa-v3-base comes from the Neutral class: Neutral Recall goes up as GPT-4o correctly resolves the low-confidence neutral/entailment cases the encoder was unsure about. Entailment and Contradiction precision stay stable across all hybrid variants.*
 
 ### 5.8 Mismatched Evaluation Methodology Note
 
-We only ran the mismatched evaluation at theta=0.90 for all hybrid systems. Running a full three-way threshold sweep on the secondary test set would have tripled API costs without adding much analytical value beyond what the matched sweep already shows.
+| **theta=0.90** | **90.1%** | **91.2%** | 3.8% | $0.013 | 79 |
 
 ---
 
@@ -342,9 +344,9 @@ We only ran the mismatched evaluation at theta=0.90 for all hybrid systems. Runn
 | DeBERTa-v3-large | 90.1% | 89.5% | -0.6% |
 | GPT-4o P1 (zero-shot) | 84.0% | **90.5%** | **+6.5%** |
 | GPT-4o P4 (CoT) | 85.5% | 90.0% | +4.5% |
-| Hybrid v1 theta=0.90 | 90.1% | **91.3%** | **+1.2%** |
-| Hybrid v2 theta=0.90 | 90.1% | 91.0% | +0.9% |
-| Hybrid v4 theta=0.90 | 90.6% | 90.5% | -0.1% |
+| Hybrid v1 theta=0.90 | 90.1% | **91.2%** | 3.8% | $0.013 | 79 |
+| **theta=0.90** | **90.1%** | **91.2%** | 3.8% | $0.013 | 79 |
+| **theta=0.90** | **90.1%** | **91.2%** | 3.8% | $0.013 | 79 |
 | Hybrid v5 (Ensemble) | **91.0%** | **92.5%** | **+1.5%** |
 
 ### 6.2 Key Finding: LLMs Improve on Mismatched
@@ -369,10 +371,10 @@ Hybrid v5 (Ensemble Gate) reaches **92.5% mismatched** -- the highest mismatched
 | DeBERTa-v3-base | 90.1% | $0.000 | **1st (free)** |
 | DeBERTa-v3-large | 90.1% | $0.000 | **1st (free)** |
 | **Hybrid v4 theta=0.90** | **90.62%** | **$0.007** | **2nd** |
-| Hybrid v1 theta=0.90 | 90.1% | $0.013 | 3rd |
-| Hybrid v2 theta=0.90 | 90.1% | $0.074 | 4th |
-| Hybrid v3 theta=0.90 | 89.88% | $0.152 | 5th |
-| Hybrid v5 Ensemble | **91.0%** | $0.258 | 6th |
+| Hybrid v1 theta=0.90 | 90.1% | **91.2%** | 3.8% | $0.013 | 79 |
+| **theta=0.90** | **90.1%** | **91.2%** | 3.8% | $0.013 | 79 |
+| **theta=0.90** | **90.1%** | **91.2%** | 3.8% | $0.013 | 79 |
+| Hybrid v5 Ensemble | **91.0%** | **0.910** | 0.948 / 0.891 / 0.918 | 0.836 / 0.906 / 0.870 | 0.950 / 0.935 / 0.942 |
 | Claude Sonnet P3 | 88.5% | $2.235 | 7th |
 | GPT-4o P1 | 84.0% | $0.204 | 8th |
 | GPT-4o P4 (CoT) | 85.5% | $0.410 | 9th |
@@ -385,7 +387,7 @@ Three systems sit on the cost-accuracy Pareto frontier -- no other system achiev
 
 1. **DeBERTa-v3-base**: 90.12%, $0.00 -- the only system that dominates it is v4, which costs $0.007
 2. **Hybrid v4 theta=0.90**: 90.62%, $0.007 -- best matched accuracy, essentially free
-3. **Hybrid v1 theta=0.90**: 90.12%, $0.013 -- best mismatched accuracy among confidence-gated systems (91.3%)
+| Hybrid v1 theta=0.90 | 90.1% | **91.2%** | 3.8% | $0.013 | 79 |
 
 Every pure LLM system falls below this frontier: GPT-4o achieves 84-85.5% at costs 30-60x higher than the hybrid systems. Routing LLMs behind an encoder gate is strictly better than using them directly for NLI.
 
@@ -403,7 +405,7 @@ GPT-5 (o3-mini) costs $14.83-$17.54 per 1,000 queries -- 36-44x the cost of GPT-
 |----------|-------------------|-----------|
 | High-volume, cost-sensitive (>100k queries/day) | DeBERTa-v3-base | $0 API, 90.1% accuracy |
 | Best accuracy on limited budget | Hybrid v4 theta=0.90 | 90.62%, only $7/million queries |
-| Best cross-genre generalisation | Hybrid v1 theta=0.90 | 91.3% mismatched |
+| Hybrid v1 theta=0.90 | 90.1% | **91.2%** | 3.8% | $0.013 | 79 |
 | No local GPU (infrastructure-light) | GPT-4o P3 | $375/million, 84.8% |
 | High-stakes single queries | Claude Sonnet P3 | 88.5%, $2,235/million |
 

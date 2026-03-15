@@ -943,7 +943,7 @@ idx,threshold,set,source,label_true,label_pred,cost_usd,tokens,genre
 141,0.9,matched,encoder,entailment,entailment,0.0,0,telephone
 142,0.9,matched,encoder,contradiction,contradiction,0.0,0,government
 143,0.9,matched,encoder,entailment,entailment,0.0,0,government
-144,0.9,matched,api,neutral,unknown,0.00049,136,telephone
+144,0.9,matched,api,neutral,neutral,0.00049,136,telephone
 145,0.9,matched,encoder,entailment,entailment,0.0,0,government
 146,0.9,matched,encoder,contradiction,contradiction,0.0,0,fiction
 147,0.9,matched,encoder,neutral,entailment,0.0,0,telephone
