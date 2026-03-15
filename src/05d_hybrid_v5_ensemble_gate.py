@@ -7,14 +7,8 @@ Gate logic: Run DeBERTa-v3-small, DeBERTa-v3-base, DeBERTa-v3-large in parallel.
   - If ANY disagree   → escalate to GPT-4o P4 (CoT few-shot)
 
 Why this works:
-  - 700/800 samples (87.5%) are unanimous → 95.00% accurate, zero API cost
-  - Only 100 samples (12.5%) escalate → LLM handles genuinely hard cases
-  - Expected total: ~93-94% matched accuracy
-
-This is fundamentally different from confidence-threshold gating (v1-v4):
-  - Threshold gates use ONE encoder's uncertainty as the signal
-  - Ensemble gates use DISAGREEMENT between models as the signal
-  - Disagreement is a much stronger signal for genuine ambiguity
+  - ~87.5% of samples are unanimous → high accuracy, zero API cost
+  - Only ~12.5% of samples escalate → LLM handles genuinely hard cases
 
 Prerequisite:
   02_encoder_baselines.py must have been run with all 5 models.
@@ -22,6 +16,9 @@ Prerequisite:
 
 Outputs:
   results/hybrid_v5_results.csv
+
+PATCH (2026-03): Added resume logic. If hybrid_v5_results.csv already exists,
+  only rows not yet processed are re-run. This allows recovery from interrupted runs.
 """
 
 import os
@@ -30,9 +27,8 @@ import time
 import pandas as pd
 import numpy as np
 from dotenv import load_dotenv
-from sklearn.metrics import accuracy_score, f1_score, classification_report
+from sklearn.metrics import accuracy_score, f1_score
 from tqdm import tqdm
-from collections import Counter
 
 load_dotenv()
 
@@ -42,47 +38,35 @@ RESULTS_DIR = os.path.join(PROJECT_DIR, "results")
 os.makedirs(RESULTS_DIR, exist_ok=True)
 
 DEB_MODELS = ["deberta_v3_small", "deberta_v3_base", "deberta_v3_large"]
+OUT_PATH   = os.path.join(RESULTS_DIR, "hybrid_v5_results.csv")
 
 # ============================================================
 # Label parser — CoT-aware
-# GPT-4o CoT responses end with "Label: <word>" after reasoning.
-# Parser priority:
-#   1. Look for explicit "label: <word>" anywhere in text (CoT format)
-#   2. Check if first line starts with a label word (direct format)
-#   3. Fallback: find last occurrence of a label word (avoids picking
-#      up label words from the reasoning body)
 # ============================================================
 def parse_label(text):
     if not text:
         return "unknown"
     text_lower = text.lower()
-
-    # Priority 1: explicit "label:" marker (CoT output format)
     label_match = re.search(r'label\s*:\s*(contradiction|entailment|neutral)', text_lower)
     if label_match:
         return label_match.group(1)
-
-    # Priority 2: first line starts with the label (direct format)
     first_line = text_lower.strip().split("\n")[0].strip()
     first_line_clean = re.sub(r"[^a-z]", " ", first_line).strip()
     for label in ["contradiction", "entailment", "neutral"]:
         if first_line_clean.startswith(label):
             return label
-
-    # Priority 3: last occurrence of a label word in full text
-    # (reasoning comes before conclusion, so last match is the answer)
-    last_pos = -1
+    last_pos   = -1
     last_label = "unknown"
     for label in ["contradiction", "entailment", "neutral"]:
         pos = text_lower.rfind(label)
         if pos > last_pos:
-            last_pos = pos
+            last_pos   = pos
             last_label = label
     return last_label
 
 
 # ============================================================
-# GPT-4o P4 (CoT few-shot) — same prompt as in notebook 03
+# GPT-4o P4 (CoT few-shot)
 # ============================================================
 PROMPT_P4 = (
     "Classify the natural language inference relationship step by step.\n\n"
@@ -106,21 +90,18 @@ PROMPT_P4 = (
 )
 
 def call_gpt4o_p4(premise, hypothesis, max_retries=3):
-    """GPT-4o with CoT few-shot (P4 prompt)."""
     from openai import OpenAI
     client = OpenAI()
-
     prompt = PROMPT_P4.format(premise=premise, hypothesis=hypothesis)
-    INPUT_COST  = 2.50   # $ per 1M tokens
+    INPUT_COST  = 2.50
     OUTPUT_COST = 10.00
-
     for attempt in range(max_retries):
         try:
             response = client.chat.completions.create(
                 model="gpt-4o",
                 messages=[{"role": "user", "content": prompt}],
                 temperature=0.0,
-                max_tokens=120,  # CoT needs more tokens than direct answer
+                max_tokens=120,
                 seed=42,
             )
             raw   = response.choices[0].message.content.strip()
@@ -133,27 +114,30 @@ def call_gpt4o_p4(premise, hypothesis, max_retries=3):
             wait = 2 ** (attempt + 1)
             print(f"  GPT-4o error (attempt {attempt+1}): {e}  — retrying in {wait}s")
             time.sleep(wait)
-
     return "unknown", 0, 0.0
 
 
 # ============================================================
-# Core hybrid v5 runner
+# Core hybrid v5 runner — with resume support
 # ============================================================
-def run_hybrid_v5(df_test, df_encoder, call_api_fn, set_name="matched"):
+def run_hybrid_v5(df_test, df_encoder, call_api_fn, set_name,
+                  already_done_idx: set):
     """
-    Hybrid v5: 3-DeBERTa ensemble gate.
-    - Unanimous: use prediction directly (no API cost)
-    - Split: escalate to LLM
+    Hybrid v5 with resume: skips rows already in already_done_idx.
+    Returns list of result dicts.
     """
-    results   = []
-    api_calls = 0
+    results    = []
+    api_calls  = 0
     total_cost = 0.0
 
     pred_cols = [f"{m}_pred" for m in DEB_MODELS]
     conf_cols = [f"{m}_conf" for m in DEB_MODELS]
 
     for i in tqdm(range(len(df_test)), desc=f"Hybrid v5 [{set_name}]"):
+        # Resume: skip rows already saved
+        if (set_name, i) in already_done_idx:
+            continue
+
         row     = df_test.iloc[i]
         enc_row = df_encoder.iloc[i]
 
@@ -163,21 +147,19 @@ def run_hybrid_v5(df_test, df_encoder, call_api_fn, set_name="matched"):
         unique_preds = set(preds)
 
         if len(unique_preds) == 1:
-            # All 3 DeBERTas agree — unanimous
             final_pred = preds[0]
             avg_conf   = float(np.mean(confs))
             source     = "ensemble"
             tokens     = 0
             cost       = 0.0
         else:
-            # Disagreement — escalate to LLM
             pred, tokens, cost = call_api_fn(row["premise"], row["hypothesis"])
-            final_pred = pred
-            avg_conf   = float(np.mean(confs))
-            source     = "api"
-            api_calls += 1
+            final_pred  = pred
+            avg_conf    = float(np.mean(confs))
+            source      = "api"
+            api_calls  += 1
             total_cost += cost
-            time.sleep(0.05)  # rate limit
+            time.sleep(0.05)
 
         results.append({
             "idx"       : i,
@@ -195,49 +177,48 @@ def run_hybrid_v5(df_test, df_encoder, call_api_fn, set_name="matched"):
             "cost_usd"  : cost,
         })
 
-    df_results = pd.DataFrame(results)
+        # Checkpoint every 50 rows
+        if len(results) % 50 == 0:
+            _checkpoint(results, set_name)
 
-    y_true = df_results["label_true"]
-    y_pred = df_results["label_pred"]
-    acc    = accuracy_score(y_true, y_pred)
-    f1     = f1_score(y_true, y_pred, average="macro",
-                      labels=["entailment", "neutral", "contradiction"])
+    print(f"  [{set_name}] New rows this run: {len(results)} | "
+          f"API calls: {api_calls} | Cost: ${total_cost:.4f}")
+    return results
 
-    ensemble_pct = (df_results["source"] == "ensemble").mean() * 100
-    api_pct      = (df_results["source"] == "api").mean() * 100
-    errors       = (y_true != y_pred).sum()
 
-    print(f"\n  ── Hybrid v5 | {set_name} ──────────────────────────────")
+def _checkpoint(new_rows, set_name):
+    """Append new rows to the CSV safely."""
+    df_new = pd.DataFrame(new_rows)
+    if os.path.exists(OUT_PATH):
+        df_existing = pd.read_csv(OUT_PATH)
+        df_combined = pd.concat([df_existing, df_new], ignore_index=True)
+        # Deduplicate on (set, idx) keeping last
+        df_combined = df_combined.drop_duplicates(subset=["set", "idx"], keep="last")
+        df_combined.to_csv(OUT_PATH, index=False)
+    else:
+        df_new.to_csv(OUT_PATH, index=False)
+
+
+def print_metrics(df, set_name):
+    sub = df[df["set"] == set_name]
+    if sub.empty:
+        return
+    acc = accuracy_score(sub["label_true"], sub["label_pred"])
+    f1  = f1_score(sub["label_true"], sub["label_pred"], average="macro",
+                   labels=["entailment", "neutral", "contradiction"])
+    ens_pct = (sub["source"] == "ensemble").mean() * 100
+    api_pct = (sub["source"] == "api").mean() * 100
+    cost    = sub["cost_usd"].sum()
+    errors  = (sub["label_true"] != sub["label_pred"]).sum()
+    print(f"\n  ── Hybrid v5 | {set_name} ({len(sub)} rows) ────────────────")
     print(f"  Accuracy : {acc:.4f} ({acc*100:.2f}%)")
     print(f"  Macro F1 : {f1:.4f}")
-    print(f"  Ensemble : {ensemble_pct:.1f}% (unanimous, free)")
-    print(f"  API      : {api_pct:.1f}% ({api_calls} calls)")
-    print(f"  Errors   : {errors}")
-    print(f"  Total cost: ${total_cost:.4f}  (${total_cost/len(df_results)*1000:.4f}/1k)")
-
-    # Per-genre breakdown
-    print(f"\n  Per-genre accuracy:")
-    for genre, grp in df_results.groupby("genre"):
-        g_acc = accuracy_score(grp["label_true"], grp["label_pred"])
-        g_api = (grp["source"] == "api").mean() * 100
-        print(f"    {genre:15s}: {g_acc*100:.1f}%  (api={g_api:.0f}%)")
-
-    return df_results, {
-        "hybrid"       : "v5_ensemble_gate",
-        "set"          : set_name,
-        "accuracy"     : acc,
-        "macro_f1"     : f1,
-        "ensemble_pct" : ensemble_pct,
-        "api_pct"      : api_pct,
-        "api_calls"    : api_calls,
-        "total_cost"   : total_cost,
-        "cost_per_1k"  : total_cost / len(df_results) * 1000,
-        "errors"       : int(errors),
-    }
+    print(f"  Ensemble : {ens_pct:.1f}%  |  API: {api_pct:.1f}%")
+    print(f"  Errors   : {errors}  |  Cost: ${cost:.4f}")
 
 
 def main():
-    # ── Load data ────────────────────────────────────────────
+    # ── Load test data ───────────────────────────────────────
     df_test_m  = pd.read_csv(os.path.join(DATA_DIR, "nli_test_800.csv"))
     df_test_mm = pd.read_csv(os.path.join(DATA_DIR, "nli_test_mm_400.csv"))
 
@@ -251,65 +232,59 @@ def main():
     df_enc_m  = pd.read_csv(enc_m_path)
     df_enc_mm = pd.read_csv(enc_mm_path) if os.path.exists(enc_mm_path) else None
 
-    # ── Check all DeBERTa columns present ────────────────────
-    required = [f"{m}_pred" for m in DEB_MODELS] + [f"{m}_conf" for m in DEB_MODELS]
+    # ── Check required columns ───────────────────────────────
+    required = ([f"{m}_pred" for m in DEB_MODELS] +
+                [f"{m}_conf" for m in DEB_MODELS])
     missing = [c for c in required if c not in df_enc_m.columns]
     if missing:
-        print(f"❌ Missing columns: {missing}")
-        print("   Re-run 02_encoder_baselines.py with all 5 models.")
+        print(f"❌ Missing encoder columns: {missing}")
         return
 
-    # ── Preview gate statistics ───────────────────────────────
-    unanimous = sum(
-        1 for _, row in df_enc_m.iterrows()
-        if len(set(row[f"{m}_pred"] for m in DEB_MODELS)) == 1
-    )
-    print(f"\n📊 Gate preview (matched):")
-    print(f"   Unanimous (free): {unanimous}/800 = {unanimous/800*100:.1f}%")
-    print(f"   Escalate to LLM:  {800-unanimous}/800 = {(800-unanimous)/800*100:.1f}%")
-    print(f"   Expected LLM API calls: ~{800-unanimous}")
+    # ── Load existing results for resume ─────────────────────
+    already_done = set()
+    if os.path.exists(OUT_PATH):
+        df_existing = pd.read_csv(OUT_PATH)
+        already_done = set(zip(df_existing["set"], df_existing["idx"]))
+        m_done  = len(df_existing[df_existing["set"] == "matched"])
+        mm_done = len(df_existing[df_existing["set"] == "mismatched"])
+        print(f"\n📂 Resuming from existing file:")
+        print(f"   matched done   : {m_done}/800")
+        print(f"   mismatched done: {mm_done}/400")
+    else:
+        print("\n📂 No existing results — starting fresh")
 
     print("\n" + "#" * 65)
     print("# HYBRID v5: 3-DeBERTa Ensemble Gate + GPT-4o P4 (CoT)")
     print("#" * 65)
 
-    all_results = []
-    all_metrics = []
+    # ── Run matched ──────────────────────────────────────────
+    m_new = run_hybrid_v5(df_test_m, df_enc_m, call_gpt4o_p4,
+                          "matched", already_done)
+    if m_new:
+        _checkpoint(m_new, "matched")
 
-    # Run on matched
-    df_res, metrics = run_hybrid_v5(df_test_m, df_enc_m, call_gpt4o_p4,
-                                    set_name="matched")
-    all_results.append(df_res)
-    all_metrics.append(metrics)
-
-    # Run on mismatched
+    # ── Run mismatched ───────────────────────────────────────
     if df_enc_mm is not None:
         missing_mm = [c for c in required if c not in df_enc_mm.columns]
         if not missing_mm:
-            df_res, metrics = run_hybrid_v5(df_test_mm, df_enc_mm, call_gpt4o_p4,
-                                            set_name="mismatched")
-            all_results.append(df_res)
-            all_metrics.append(metrics)
+            mm_new = run_hybrid_v5(df_test_mm, df_enc_mm, call_gpt4o_p4,
+                                   "mismatched", already_done)
+            if mm_new:
+                _checkpoint(mm_new, "mismatched")
         else:
             print(f"\n⚠️  Skipping mismatched — missing columns: {missing_mm}")
 
-    # ── Save ─────────────────────────────────────────────────
-    df_all  = pd.concat(all_results, ignore_index=True)
-    out_path = os.path.join(RESULTS_DIR, "hybrid_v5_results.csv")
-    df_all.to_csv(out_path, index=False)
-    print(f"\n✅ Saved: {out_path}")
+    # ── Final save & metrics ──────────────────────────────────
+    df_final = pd.read_csv(OUT_PATH)
+    df_final = df_final.drop_duplicates(subset=["set", "idx"], keep="last")
+    df_final.to_csv(OUT_PATH, index=False)
 
-    # ── Final summary ─────────────────────────────────────────
-    print("\n" + "#" * 65)
-    print("# HYBRID v5 SUMMARY")
-    print("#" * 65)
-    df_metrics = pd.DataFrame(all_metrics)
-    print(df_metrics[["set","accuracy","macro_f1","ensemble_pct","api_pct",
-                       "api_calls","cost_per_1k","errors"]].to_string(index=False))
+    print(f"\n✅ Final CSV: {OUT_PATH}")
+    print(f"   matched rows   : {len(df_final[df_final['set']=='matched'])}/800")
+    print(f"   mismatched rows: {len(df_final[df_final['set']=='mismatched'])}/400")
 
-    best = df_metrics.loc[df_metrics["accuracy"].idxmax()]
-    print(f"\n🏆 Best: {best['set']} → {best['accuracy']*100:.2f}% "
-          f"| API={best['api_pct']:.1f}% | cost=${best['cost_per_1k']:.4f}/1k")
+    print_metrics(df_final, "matched")
+    print_metrics(df_final, "mismatched")
 
     print("\n" + "=" * 65)
     print("HYBRID v5 COMPLETE ✅")
