@@ -59,9 +59,10 @@ python src/09_genre_label_analysis.py
 | §3.1 GPT-4o P1 MM 90.5% | Best mismatched LLM | `03_gpt4o_prompting.py` | `api_results_gpt4o_mm.csv` |
 | §4.2 Claude P3 88.5% | Best pure API | `04_other_llms.py` | `api_results_claude.csv` |
 | §5.2 Hybrid v1 MM 91.3% | Best mismatched hybrid | `05a_hybrid_v1_v2_gatekeeper.py` | `hybrid_v1_results.csv` |
-| §5.5 Hybrid v4 90.62% | Best matched overall | `05c_hybrid_v4_deberta_large_gpt4o.py` | `hybrid_v4_results.csv` |
-| §5.6 v5 Ensemble 87.5% | Unanimous split | `05d_hybrid_v5_ensemble_gate.py` | `hybrid_v5_results.csv` |
-| §5.6 GPT-4o 51% on hard 100 | Annotation ceiling | `05d_hybrid_v5_ensemble_gate.py` | `hybrid_v5_results.csv` |
+| §5.5 Hybrid v4 90.62% | Best cost-efficiency | `05c_hybrid_v4_deberta_large_gpt4o.py` | `hybrid_v4_results.csv` |
+| §5.6 v5 Ensemble 91.0% matched / 92.5% MM | Best overall system | `05d_hybrid_v5_ensemble_gate.py` | `hybrid_v5_results.csv` |
+| §5.6 Unanimous 87.5% | Ensemble split | `05d_hybrid_v5_ensemble_gate.py` | `hybrid_v5_results.csv` |
+| §5.6 GPT-4o 63% on hard 100 | Annotation ceiling | `05d_hybrid_v5_ensemble_gate.py` | `hybrid_v5_results.csv` |
 | §7.1 Cost table | All cost/1k figures | `06_cost_analysis.py` | `cost_summary.csv` |
 | §8.1 Error type counts | 30 Ent→Neu etc. | `08_error_analysis.py` | `error_analysis.csv` |
 | §8.4 Genre error rates | Fiction 12.2% etc. | `09_genre_label_analysis.py` | `genre_label_breakdown.csv` |

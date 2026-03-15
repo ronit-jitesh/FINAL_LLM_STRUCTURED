@@ -7,9 +7,11 @@
 
 Comprehensive evaluation of Natural Language Inference (NLI) systems using MultiNLI, comparing encoder baselines, LLM prompting strategies, and hybrid gatekeeper architectures.
 
-**Best system**: Hybrid v4 (DeBERTa-v3-large + GPT-4o) — **90.62% matched, $0.007/1k queries**
+**Best overall system**: Hybrid v5 (3-DeBERTa Ensemble Gate + GPT-4o) — **91.0% matched, 92.5% mismatched**
 
-**Key finding**: Ensemble disagreement gating reveals that 87.5% of MultiNLI samples are unanimously solvable at 95.0% accuracy, while the remaining 12.5% represent genuinely label-ambiguous cases that even GPT-4o resolves only at 51% accuracy.
+**Best cost-efficiency**: Hybrid v4 (DeBERTa-v3-large + GPT-4o) — **90.62% matched, $0.007/1k queries**
+
+**Key finding**: Ensemble disagreement gating reveals that 87.5% of MultiNLI samples are unanimously solvable at 95.0% accuracy, while the remaining 12.5% represent genuinely label-ambiguous cases that even GPT-4o resolves only at 63% accuracy.
 
 ---
 
@@ -99,8 +101,8 @@ python src/09_genre_label_analysis.py
 | GPT-4o P4 (pure) | 85.50% | 90.0% | 100% | $0.410 |
 | Claude Sonnet P3 (pure) | 88.50% | — | 100% | $2.235 |
 | Hybrid v1 θ=0.90 | 90.12% | **91.3%** | 3.8% | $0.013 |
-| **Hybrid v4 θ=0.90** ⭐ | **90.62%** | 90.5% | 2.0% | **$0.007** |
-| Hybrid v5 (Ensemble) | **91.0%** | **92.5%** | 12.5% | $0.258 |
+| Hybrid v4 θ=0.90 ⭐ cost | **90.62%** | 90.5% | 2.0% | **$0.007** |
+| **Hybrid v5 (Ensemble) ⭐ best** | **91.0%** | **92.5%** | 12.5% | $0.258 |
 
 ---
 
