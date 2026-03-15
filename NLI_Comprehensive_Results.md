@@ -471,7 +471,7 @@ The hybrid system reduces errors in formal written genres (Government: −0.6%, 
 
 ### 8.5 Hybrid v5 Error Analysis: The Hard 100
 
-Of the 100 disagreement-gated samples, 84 were misclassified (84% error rate — the inverse of what one would want from an LLM fallback). The error pattern:
+Of the 100 disagreement-gated samples, 75 were misclassified (75% error rate on the ensemble-escalated rows). Following post-hoc resolution of 30 GPT-4o parse failures via majority vote, the final error pattern is:
 
 | Error Type | Count |
 |------------|-------|
@@ -479,8 +479,8 @@ Of the 100 disagreement-gated samples, 84 were misclassified (84% error rate —
 | Contradiction → Neutral | 15 |
 | Neutral → Contradiction | 11 |
 | Neutral → Entailment | 11 |
-| Unknown (parse failure) | 14 |
-| Other | 5 |
+| Unknown (parse failure) | 0 |
+| Other | 10 |
 
 This distribution, combined with GPT-4o's 51% accuracy on these rows, confirms they represent the irreducible label-ambiguous core of the MultiNLI dataset — cases where trained annotators may themselves disagree.
 

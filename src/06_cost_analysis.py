@@ -67,12 +67,22 @@ def main():
             })
 
     # ========================================================
-    # GPT-5
+    # GPT-5 (o3-mini) — recompute cost from tokens if corrupt
     # ========================================================
+    # o3-mini pricing: $1.10/M input tokens, $4.40/M output tokens
+    GPT5_INPUT_COST_PER_TOKEN  = 1.10  / 1_000_000
+    GPT5_OUTPUT_COST_PER_TOKEN = 4.40  / 1_000_000
+
     df_gpt5 = load_if_exists("api_results_gpt5.csv")
     if df_gpt5 is not None:
         for prompt_name in df_gpt5["prompt"].unique():
-            subset = df_gpt5[df_gpt5["prompt"] == prompt_name]
+            subset = df_gpt5[df_gpt5["prompt"] == prompt_name].copy()
+            # If median cost_usd > $1, it's corrupt (contains token counts not dollars)
+            if subset["cost_usd"].median() > 1.0:
+                subset["cost_usd"] = (
+                    subset["prompt_tokens"]     * GPT5_INPUT_COST_PER_TOKEN +
+                    subset["completion_tokens"]  * GPT5_OUTPUT_COST_PER_TOKEN
+                )
             avg_tokens = subset["total_tokens"].mean()
             avg_cost = subset["cost_usd"].mean()
             cost_rows.append({
@@ -82,6 +92,7 @@ def main():
                 "cost_per_query": avg_cost,
                 "cost_per_1k": avg_cost * 1000,
             })
+
 
     # ========================================================
     # Claude Sonnet
