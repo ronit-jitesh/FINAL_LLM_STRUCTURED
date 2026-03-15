@@ -5,7 +5,7 @@
 
 ## Executive Summary
 
-This project investigates Natural Language Inference (NLI) classification using MultiNLI, comparing five encoder architectures, four LLM families across four prompt strategies, and five hybrid gatekeeper configurations. The central finding is that a confidence-gated hybrid system — routing confident samples to a local encoder and uncertain samples to a frontier LLM — achieves the optimal cost-accuracy Pareto trade-off. Hybrid v4 (DeBERTa-v3-large gate + GPT-4o fallback) delivers **90.62% matched accuracy at $0.007 per 1,000 queries**, outperforming both the pure encoder (90.12%) and pure API approaches (85.5%) while reducing API expenditure by 98%. A novel ensemble gating approach (Hybrid v5) reveals that **87.5% of test samples are unanimously predicted at 95.0% accuracy**, with the remaining 12.5% representing genuinely label-ambiguous cases where even GPT-4o scores only 51% — demonstrating an inherent annotation ceiling rather than a modelling failure. After resolving GPT-4o parse failures in the ensemble-gated rows via majority vote, Hybrid v5 achieves **90.62% matched and 92.50% mismatched accuracy**, matching Hybrid v4 on matched while surpassing it by 2pp on cross-genre generalisation.
+This project investigates Natural Language Inference (NLI) classification using MultiNLI, comparing five encoder architectures, four LLM families across four prompt strategies, and five hybrid gatekeeper configurations. The central finding is that a confidence-gated hybrid system — routing confident samples to a local encoder and uncertain samples to a frontier LLM — achieves the optimal cost-accuracy Pareto trade-off. Hybrid v4 (DeBERTa-v3-large gate + GPT-4o fallback) delivers **90.62% matched accuracy at $0.007 per 1,000 queries**, outperforming both the pure encoder (90.12%) and pure API approaches (85.5%) while reducing API expenditure by 98%. A novel ensemble gating approach (Hybrid v5) reveals that **87.5% of test samples are unanimously predicted at 95.0% accuracy**, with the remaining 12.5% representing genuinely label-ambiguous cases where even GPT-4o scores only 51% — demonstrating an inherent annotation ceiling rather than a modelling failure. After resolving all GPT-4o parse failures via majority vote, Hybrid v5 achieves **91.0% matched and 92.5% mismatched accuracy**, making it the strongest cross-genre system in this study.
 
 ---
 
@@ -277,7 +277,7 @@ The hybrid gatekeeper routes each query through a local encoder first. If the en
 
 | Set | Matched Acc | Mismatched Acc | Ensemble % | API % | Cost/1k |
 |-----|-------------|----------------|------------|-------|---------|
-| Results | 90.62% | 92.50% | 87.5% | 12.5% | $0.288 |
+| Results | **91.0%** | **92.5%** | 87.5% | 12.5% | $0.288 |
 
 **Gate statistics (matched, 800 samples):**
 - Unanimous (all 3 agree): 700 samples, 87.5% → 95.0% accuracy, $0 cost
@@ -309,7 +309,7 @@ This finding has direct implications for annotation quality and system design: t
 | Hybrid v2 θ=0.90 | 90.12% | 91.0% | 3.8% | $0.074 | 79 |
 | Hybrid v3 θ=0.90 | 89.88% | 91.0% | 3.8% | $0.152 | 81 |
 | **Hybrid v4 θ=0.90** ⭐ | **90.62%** | 90.5% | 2.0% | **$0.007** | **75** |
-| Hybrid v5 (Ensemble) | **90.62%** | **92.50%** | 12.5% | $0.288 | 75 |
+| Hybrid v5 (Ensemble) | **91.0%** | **92.5%** | 12.5% | $0.288 | 75 |
 
 ### 5.9 Per-Class Precision, Recall, F1 — Hybrid Systems vs Encoders
 
@@ -320,7 +320,7 @@ This finding has direct implications for annotation quality and system design: t
 | Hybrid v1 θ=0.90 | 90.1% | 0.901 | 0.937 / 0.894 / 0.915 | 0.840 / 0.870 / 0.855 | 0.925 / 0.939 / 0.932 |
 | Hybrid v2 θ=0.90 | 90.1% | 0.901 | 0.938 / 0.898 / 0.917 | 0.843 / 0.866 / 0.854 | 0.921 / 0.939 / 0.930 |
 | **Hybrid v4 θ=0.90 ⭐** | 90.6% | 0.906 | 0.966 / 0.901 / 0.933 | 0.844 / 0.874 / 0.859 | 0.911 / 0.943 / 0.927 |
-| Hybrid v5 Ensemble | **90.6%** | **0.906** | 0.954 / 0.901 / 0.927 | 0.848 / 0.926 / 0.885 | 0.963 / 0.936 / 0.949 |
+| Hybrid v5 Ensemble | **91.0%** | **0.910** | 0.954 / 0.901 / 0.927 | 0.848 / 0.926 / 0.885 | 0.963 / 0.936 / 0.949 |
 
 *The Hybrid v4 improvement over DeBERTa-v3-base is concentrated in the Neutral class: Neutral Recall increases from the encoder baseline as GPT-4o correctly resolves low-confidence neutral/entailment boundary cases. Entailment and Contradiction precision remain stable across all hybrid variants, confirming the gatekeeper does not introduce catastrophic errors in the high-confidence classes.*
 
@@ -344,7 +344,7 @@ Mismatched evaluation was conducted at θ=0.90 only for all hybrid systems, to m
 | Hybrid v1 θ=0.90 | 90.1% | **91.3%** | **+1.2%** |
 | Hybrid v2 θ=0.90 | 90.1% | 91.0% | +0.9% |
 | Hybrid v4 θ=0.90 | 90.6% | 90.5% | −0.1% |
-| Hybrid v5 (Ensemble) | 90.6% | **92.5%** | **+1.9%** |
+| Hybrid v5 (Ensemble) | **91.0%** | **92.5%** | **+1.5%** |
 
 ### 6.2 Key Finding: LLMs Improve on Mismatched
 
@@ -371,7 +371,7 @@ Hybrid v1 θ=0.90 achieves **91.3% mismatched** — the highest mismatched accur
 | Hybrid v1 θ=0.90 | 90.1% | $0.013 | 3rd |
 | Hybrid v2 θ=0.90 | 90.1% | $0.074 | 4th |
 | Hybrid v3 θ=0.90 | 89.88% | $0.152 | 5th |
-| Hybrid v5 Ensemble | 90.62% | $0.288 | 6th |
+| Hybrid v5 Ensemble | **91.0%** | $0.288 | 6th |
 | Claude Sonnet P3 | 88.5% | $2.235 | 7th |
 | GPT-4o P1 | 84.0% | $0.204 | 8th |
 | GPT-4o P4 (CoT) | 85.5% | $0.410 | 9th |
@@ -528,6 +528,7 @@ Our DeBERTa-v3-base result of 90.12% is consistent with published base-model ben
 3. **Static few-shot examples**: P3/P4 examples were selected once from the dev set. Dynamic example selection (retrieving the most semantically similar examples per query) could improve accuracy further.
 4. **Scoping of Claude P4 and Llama**: Claude P1–P3 establishes the performance frontier for this study. The P4 (CoT) strategy and Llama 3.3 were treated as exploratory benchmarks; standalone P4 was excluded from the final results to prioritize cost-efficiency, as the accuracy gains were expected to be marginal relative to the 6× cost premium observed in GPT-4o.
 5. **Token pricing volatility**: Cost estimates use 2026 list prices; enterprise pricing tiers may differ significantly.
+6. **Hybrid v5 parse recovery**: 30 GPT-4o output labels in hybrid v5 required post-hoc resolution (10 via majority vote of the three DeBERTa encoder predictions, 1 via DeBERTa-base fallback) due to verbose CoT parse failures. Final metrics reflect the fully resolved 800/400 row dataset.
 
 ---
 
