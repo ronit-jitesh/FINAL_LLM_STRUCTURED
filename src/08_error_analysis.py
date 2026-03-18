@@ -105,9 +105,9 @@ def main():
             res = analyze_errors(p4["label_true"], p4["predicted_label"], "GPT-4o P4 (CoT)")
             if res: results.append(res)
             
-    # Claude — use P3 (best prompt with valid predictions)
+    # Claude — use P3. unknowns are kept in (they count as wrong predictions).
     if not df_claude.empty:
-        p3 = df_claude[(df_claude["prompt"] == "P3_few_shot") & (df_claude["predicted_label"] != "unknown")]
+        p3 = df_claude[df_claude["prompt"] == "P3_few_shot"]
         if len(p3) == len(y_true):
             res = analyze_errors(p3["label_true"], p3["predicted_label"], "Claude P3 (Few-shot)")
             if res: results.append(res)

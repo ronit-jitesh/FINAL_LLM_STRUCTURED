@@ -95,14 +95,15 @@ if not df_gpt4o.empty:
     print("GPT-4o: classification reports computed")
 
 # --- Claude ---
+# NOTE: unknown labels are NOT filtered out. They count as incorrect
+# predictions, keeping the denominator at full N.
 df_claude = safe_load("api_results_claude.csv")
 if not df_claude.empty:
     for prompt in df_claude["prompt"].unique():
         sub = df_claude[df_claude["prompt"] == prompt]
-        valid = sub[sub["predicted_label"] != "unknown"]
-        if len(valid) > 50:
+        if len(sub) > 50:
             all_reports += get_classification_report(
-                valid["label_true"], valid["predicted_label"],
+                sub["label_true"], sub["predicted_label"],
                 f"Claude {prompt.split('_')[0]}"
             )
     print("Claude: classification reports computed")

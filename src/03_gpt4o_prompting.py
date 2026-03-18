@@ -296,7 +296,13 @@ def run_prompts_on_dataset(df, output_path, set_name="matched"):
 
 
 def evaluate_results(df_results):
-    """Evaluate and print metrics for all prompts."""
+    """Evaluate and print metrics for all prompts.
+
+    IMPORTANT: 'unknown' labels (API parse failures) are kept in the
+    denominator and scored as incorrect predictions. This ensures reported
+    metrics represent a conservative lower bound and prevents metric
+    inflation from excluding failed responses.
+    """
     print("\n" + "#" * 60)
     print("# EVALUATION RESULTS")
     print("#" * 60)
@@ -311,11 +317,17 @@ def evaluate_results(df_results):
             continue
 
         y_true = subset["label_true"]
+        # Keep 'unknown' in y_pred — sklearn treats it as a fourth class
+        # that never matches any true label, so it counts as incorrect.
+        # Denominator stays at full N (800/400), not reduced.
         y_pred = subset["predicted_label"]
 
         acc = accuracy_score(y_true, y_pred)
-        f1 = f1_score(y_true, y_pred, average="macro", labels=labels)
-        per_class = f1_score(y_true, y_pred, average=None, labels=labels)
+        # labels= restricts which classes appear in the report, but
+        # unknown predictions still count as wrong in accuracy and
+        # reduce precision/recall for the affected true class.
+        f1 = f1_score(y_true, y_pred, average="macro", labels=labels, zero_division=0)
+        per_class = f1_score(y_true, y_pred, average=None, labels=labels, zero_division=0)
 
         unknowns = (y_pred == "unknown").sum()
         avg_tokens = subset["total_tokens"].mean()

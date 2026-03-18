@@ -15,6 +15,12 @@ Thumbs.db
 INTERNAL_NOTES.md
 updated results.ipynb
 updated  results.ipynb
+requirements_addendum.txt
+RECOMPUTE_PROMPT.txt
+TEAM_UPDATE.md
+TEAM_UPDATE.html
+hybrid_v5_results_backup.csv
+hybrid_v3_checkpoint_m_0.95.csv
 
 # Logs (large, not needed in repo)
 logs_*.txt

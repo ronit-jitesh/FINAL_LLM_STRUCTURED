@@ -1,0 +1,7 @@
+comparison,acc_a,acc_b,diff_pp,p_value,verdict,discordant_pairs,test_type
+Base Encoder vs Hybrid v1,90.12,90.12,0.0,1.0,ns  (not significant),16,exact_binomial
+Large Encoder vs Hybrid v4,90.12,90.75,0.62,0.2266,ns  (not significant),11,exact_binomial
+Hybrid v4 vs Hybrid v5,90.75,91.0,0.25,0.8774,ns  (not significant),42,chi_squared
+GPT-4o P1 vs P4,84.0,85.5,1.5,0.1624,ns  (not significant),62,chi_squared
+GPT-4o P4 vs Hybrid v4,85.5,90.75,5.25,0.0002,*** p<0.01,124,chi_squared
+Base Encoder vs Hybrid v5,90.12,91.0,0.88,0.3239,ns  (not significant),37,chi_squared
